@@ -29,6 +29,9 @@ $ docker buildx build --platform linux/amd64,linux/arm64 \
 ### Run
 
 ```bash
+$ mkdir -p projects
+$ chmod 777 projects
+
 $ docker compose up -d
 $ docker compose down
 ```

@@ -14,7 +14,7 @@ services:
       CLAUDE_BINARY_PATH: "/usr/bin/claude"
       DATABASE_URL: "postgresql+asyncpg://${DB_USER:-claude}:${DB_PASSWORD:-claudepass}@postgres:5432/${DB_NAME:-claude_api}"
     volumes:
-      - ./projects:/tmp/claude_projects
+      - ./projects:/tmp/claude_projects:rw
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
