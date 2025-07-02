@@ -35,7 +35,6 @@ COPY --from=builder /install /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
 RUN adduser --disabled-password --gecos '' apiuser
-USER apiuser
 
 ENV PYTHONUNBUFFERED=1 \
     UVICORN_HOST=0.0.0.0 \
@@ -43,6 +42,11 @@ ENV PYTHONUNBUFFERED=1 \
     PROJECT_ROOT=/tmp/claude_projects \
     CLAUDE_BINARY_PATH=/usr/local/bin/claude \
     LOG_LEVEL=info
+
+RUN mkdir -p /tmp/claude_projects && \
+    chown -R apiuser:apiuser /tmp/claude_projects
+
+USER apiuser
 
 WORKDIR /app
 COPY --chown=apiuser:apiuser . /app
