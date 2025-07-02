@@ -136,6 +136,18 @@ async def create_chat_completion(
         project_id = request.project_id or f"default-{client_id}"
         project_path = create_project_directory(project_id)
         
+        from claude_code_api.core.database import db_manager
+        project = await db_manager.get_project(project_id)
+        if not project:
+            await db_manager.create_project({
+                "id": project_id,
+                "name": f"Project {project_id}",
+                "description": f"Auto-created project for {client_id}",
+                "path": str(project_path),
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow()
+            })
+        
         # Handle session management
         if request.session_id:
             # Continue existing session

@@ -298,6 +298,7 @@ $RECYCLE.BIN/
 .claude/
 sessions/
 projects/
+postgres-data/
 
 # API keys and tokens
 api_keys.txt

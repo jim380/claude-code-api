@@ -1,0 +1,57 @@
+services:
+  api:
+    build:
+      context: .
+      args:
+        - BUILDKIT_INLINE_CACHE=1
+    image: ${DOCKER_IMAGE:-claude-code-api}:${DOCKER_TAG:-latest}
+    restart: unless-stopped
+    ports:
+      - "${API_PORT:-1833}:8000"
+    env_file:
+      - .env
+    environment:
+      CLAUDE_BINARY_PATH: "/usr/bin/claude"
+      DATABASE_URL: "postgresql+asyncpg://${DB_USER:-claude}:${DB_PASSWORD:-claudepass}@postgres:5432/${DB_NAME:-claude_api}"
+    volumes:
+      - ./projects:/tmp/claude_projects
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    depends_on:
+      postgres:
+        condition: service_healthy
+        required: false
+    networks:
+      - claude-net
+
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: "${DB_USER:-claude}"
+      POSTGRES_PASSWORD: "${DB_PASSWORD:-claudepass}"
+      POSTGRES_DB: "${DB_NAME:-claude_api}"
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U $${POSTGRES_USER:-claude} -d $${POSTGRES_DB:-claude_api}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - claude-net
+    ports:
+      - "${DB_PORT:-5432}:5432"
+
+networks:
+  claude-net:
+    driver: bridge

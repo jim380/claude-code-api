@@ -2,9 +2,22 @@
 
 import os
 import shutil
-from typing import List, Union
+from typing import List, Union, Optional, Any
 from pydantic import Field, field_validator
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+def parse_comma_separated_list(v: Any) -> List[str]:
+    """Parse comma-separated string into list."""
+    if v is None or v == '' or v == []:
+        return []
+    if isinstance(v, str):
+        if not v.strip():
+            return []
+        return [x.strip() for x in v.split(',') if x.strip()]
+    if isinstance(v, list):
+        return v
+    return []
 
 
 def find_claude_binary() -> str:
@@ -65,18 +78,17 @@ class Settings(BaseSettings):
     debug: bool = False
     
     # Authentication
-    api_keys: List[str] = Field(default_factory=list)
+    api_keys_str: str = Field(default="", alias="API_KEYS")
     require_auth: bool = False
     
-    @field_validator('api_keys', mode='before')
-    def parse_api_keys(cls, v):
-        if isinstance(v, str):
-            return [x.strip() for x in v.split(',') if x.strip()]
-        return v or []
+    @property
+    def api_keys(self) -> List[str]:
+        """Get API keys as a list."""
+        return parse_comma_separated_list(self.api_keys_str)
     
     # Claude Configuration  
     claude_binary_path: str = find_claude_binary()
-    claude_api_key: str = ""
+    claude_api_key: str = Field(default="")
     default_model: str = "claude-3-5-sonnet-20241022"
     max_concurrent_sessions: int = 10
     session_timeout_minutes: int = 30
@@ -112,10 +124,14 @@ class Settings(BaseSettings):
     streaming_chunk_size: int = 1024
     streaming_timeout_seconds: int = 300
     
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        case_sensitive = False
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=False,
+        extra="allow",
+        json_schema_serialization_defaults_required=True,
+        env_nested_delimiter=None
+    )
 
 
 # Create global settings instance

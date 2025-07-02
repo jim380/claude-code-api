@@ -59,16 +59,14 @@ class ClaudeProcess:
                 model=model or settings.default_model
             )
             
-            # Start process from src directory (where Claude works without API key)
-            # Use absolute path to be sure
-            src_dir = "/workspaces/claude-code-api/claude_code_api"
-            logger.info(f"Starting Claude from directory: {src_dir}")
+            # Start process from project directory
+            logger.info(f"Starting Claude from directory: {self.project_path}")
             logger.info(f"Command: {' '.join(cmd)}")
             
             # Claude CLI runs to completion, so we run it and capture all output
             self.process = await asyncio.create_subprocess_exec(
                 *cmd,
-                cwd=src_dir,
+                cwd=str(self.project_path),
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE
             )

@@ -58,9 +58,19 @@ help:
 	@echo "  make start-js-prod  - Build and start TypeScript API server (production)"
 	@echo "  make build-js       - Build TypeScript project"
 	@echo ""
+	@echo "Docker:"
+	@echo "  make docker-build       - Build Docker image"
+	@echo "  make docker-build-multi - Build multi-arch Docker image"
+	@echo ""
 	@echo "General:"
 	@echo "  make clean       - Clean up Python cache files"
 	@echo "  make kill PORT=X - Kill process on specific port"
 	@echo ""
 	@echo "IMPORTANT: Both implementations are functionally equivalent!"
 	@echo "Use Python or TypeScript - both provide the same OpenAI-compatible API."
+
+docker-build:
+	docker build -t claude-code-api:latest .
+
+docker-build-multi:
+	./scripts/docker-build.sh
