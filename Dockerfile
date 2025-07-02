@@ -34,8 +34,6 @@ RUN curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - && \
 COPY --from=builder /install /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
-RUN adduser --disabled-password --gecos '' apiuser
-
 ENV PYTHONUNBUFFERED=1 \
     UVICORN_HOST=0.0.0.0 \
     UVICORN_PORT=8000 \
@@ -43,13 +41,8 @@ ENV PYTHONUNBUFFERED=1 \
     CLAUDE_BINARY_PATH=/usr/local/bin/claude \
     LOG_LEVEL=info
 
-RUN mkdir -p /tmp/claude_projects && \
-    chown -R apiuser:apiuser /tmp/claude_projects
-
-USER apiuser
-
 WORKDIR /app
-COPY --chown=apiuser:apiuser . /app
+COPY . /app
 
 ENTRYPOINT ["/usr/bin/tini", "--"]
 
